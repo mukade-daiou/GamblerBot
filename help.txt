@@ -1,0 +1,8 @@
+`$start` テーブルを開く(テーマ、倍率、上限を設定)
+`$bet [Number] [Bet]` Number番のテーブルにBet枚賭ける
+`$end [Number]` Number番のテーブルを閉じる(開いたユーザーのみ)
+`$list` 現在のユーザーの所持金一覧
+`$tables` 現在開かれてるテーブル一覧
+`$stop　[Number]` Number番のテーブルを強制終了(権限Admin所持者のみ) 
+`$path` 現在時点でのpathを発行する
+`$rollback`　入力するpath時点での所持金の状態になる
