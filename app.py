@@ -60,16 +60,32 @@ async def on_message(message):
                     tmp_vars["title"], tmp_vars["odds"], tmp_vars["upper"],
                     author.discriminator))
                 state = ""
-                await message.channel.send(f"テーマ:{tmp_vars['title']}\n"
+                await message.channel.send(f"番号:{len(tables)-1}\n"
+                                           f"テーマ:{tmp_vars['title']}\n"
                                            f"倍率:{tmp_vars['odds']}\n"
-                                           f"上限: {'なし' if tmp_vars['upper'] == 0 else tmp_vars['upper']}")
+                                           f"上限: {'free' if tmp_vars['upper'] == 0 else tmp_vars['upper']}")
             except ValueError:
                 await message.channel.send("無効な値です\nもう一度入力してください")
 
     elif "$bet" in contents:
-        if len(contents) < 4:
+        if len(contents) < 3:
             await message.channel.send("無効な入力です")
             return
+        if len(contents) == 3:
+            try:
+                number = int(contents[1])
+                bet_price = int(contents[2])
+                if [i for i in tables[number].bets
+                        if i['user'] == author.discriminator] == []:
+                    await message.channel.send("無効な入力です")
+                    return
+                else:
+                    await message.channel.send(
+                        tables[number].bet(author, bet_price))
+                    return
+            except (ValueError, IndexError):
+                await message.channel.send("無効な入力です")
+                return
         try:
             number = int(contents[1])
             bet_price = int(contents[2])
@@ -90,7 +106,7 @@ async def on_message(message):
             for bet in tables[number].bets:
                 res += (f'{User.get_user(bet["user"])["name"]}  '
                         f'{bet["target"]}  '
-                        f'{bet["coin"]}\n')
+                        f'{bet["coin"]}アスペス\n')
             if res == '':
                 res = 'no bet'
             await message.channel.send(res)

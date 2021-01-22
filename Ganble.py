@@ -4,20 +4,26 @@ import User
 class Table:
     def __init__(self, title, odds, upper, owner):
         self.title = title
-        self.odds = int(odds)
+        self.odds = float(odds)
         self.upper = int(int(1e9) if int(upper) == 0 else int(upper))
         self.owner = owner
         self.bets = []
 
-    def bet(self, user, coin, target):
-        if user.discriminator in [i["user"] for i in self.bets]:
-            return "すでにベットは完了しています"
+    def bet(self, user, coin, target=''):
         user = User.get_user(user.discriminator)
         if coin > user['coin']:
             coin = user['coin']
-        if coin > self.upper:
-            coin = self.upper
-        self.bets.append({"user": user["id"], "coin": coin, "target": target})
+        if user['id'] in [i["user"] for i in self.bets]:
+            past_bet = [i for i in self.bets if i['user']
+                        == user['id']][0]
+            if coin + past_bet['coin'] > self.upper:
+                coin = self.upper - past_bet['coin']
+            self.bets[self.bets.index(past_bet)]['coin'] += coin
+        else:
+            if coin > self.upper:
+                coin = self.upper
+            self.bets.append(
+                {"user": user["id"], "coin": coin, "target": target})
         user['coin'] -= coin
         return f"{coin}アスペスのベット、受け取りました"
 
@@ -31,7 +37,7 @@ class Table:
                              for i in self.bets if i['user'] == user["id"]][0]
             except IndexError:
                 continue
-            old_coin = user['coin']+bet_price
+            old_coin = user['coin']
             if user["id"] in winners:
                 user['coin'] += int((bet_price + cash //
                                      len(winners)) * self.odds)
