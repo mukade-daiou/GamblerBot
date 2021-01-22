@@ -33,9 +33,13 @@ async def on_message(message):
         tmp_vars["channel"] = message.channel
         state = "setting"
         tmp_vars["count"] = 0
+        tmp_vars['author'] = author
         await message.channel.send("テーマは?")
 
     elif state == "setting" and message.channel == tmp_vars["channel"]:
+        if author != tmp_vars["author"]:
+            await message.channel.send("権限がありません")
+            return
         if tmp_vars["count"] == 0:
             tmp_vars["title"] = message.content
             tmp_vars['count'] = 1
@@ -63,19 +67,35 @@ async def on_message(message):
                 await message.channel.send("無効な値です\nもう一度入力してください")
 
     elif "$bet" in contents:
-        if len(contents) < 3:
+        if len(contents) < 4:
             await message.channel.send("無効な入力です")
             return
         try:
             number = int(contents[1])
             bet_price = int(contents[2])
+            bet_target = contents[3]
         except ValueError:
             await message.channel.send("無効な入力です")
             return
         if not len(tables) > number:
             await message.channel.send("無効な入力です")
             return
-        await message.channel.send(tables[number].bet(author, bet_price))
+        await message.channel.send(tables[number].bet(author, bet_price,
+                                                      bet_target))
+
+    elif "$betlist" in contents:
+        try:
+            res = ''
+            number = int(contents[1])
+            for bet in tables[number].bets:
+                res += (f'{User.get_user(bet["user"])["name"]}  '
+                        f'{bet["target"]}  '
+                        f'{bet["coin"]}\n')
+            if res == '':
+                res = 'no bet'
+            await message.channel.send(res)
+        except (ValueError, IndexError):
+            await message.channel.send("無効な入力です")
 
     elif "$end" in contents and state == '':
         if len(contents) < 2:
@@ -106,7 +126,9 @@ async def on_message(message):
         for i, table in enumerate(tables):
             res += str(i) + "    " + \
                 (f'{table.title}   倍率:{table.odds}   '
-                 f'上限: {"free" if table.upper == int(1e9) else table.upper}')
+                 f'上限: {"free" if table.upper == int(1e9) else table.upper}\n')
+        if res == '':
+            res = 'No table'
         await message.channel.send(res)
 
     elif '$list' in contents:
@@ -114,6 +136,12 @@ async def on_message(message):
         for user in User.users:
             res += f'{user["name"]} : {user["coin"]}アスペス\n'
         await message.channel.send(res)
+
+    elif '$reset' in contents:
+        if 'admin' not in [i.name for i in author.roles]:
+            await message.channel.send('権限がありません')
+            return
+        await message.channel.send(User.reset())
 
     elif '$give' in contents:
         if len(contents) < 3 or message.mentions == []:
@@ -145,6 +173,7 @@ async def on_message(message):
         try:
             number = int(contents[1])
             await message.channel.send(tables[number].stop())
+            del tables[number]
         except (ValueError, IndexError):
             await message.channel.send('無効な入力です')
 

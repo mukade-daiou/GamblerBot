@@ -5,6 +5,14 @@ def get_user(id):
     return [user for user in users if user["id"] == id][0]
 
 
+def reset():
+    res = ''
+    for user in users:
+        user["coin"] = 1000
+        res += (f'{user["name"]}  {user["coin"]}アスペス\n')
+    return res
+
+
 def set_up(members):
     for member in members:
         if member.bot:
@@ -35,6 +43,7 @@ def decipher(base):
 
 def rollback(members, path=''):
     res = ''
+    users = []
     if path != '':
         try:
             data = decipher(path)
@@ -51,4 +60,4 @@ def rollback(members, path=''):
 
 
 if __name__ == "__main__":
-    decipher(input())
+    print(decipher(input()))

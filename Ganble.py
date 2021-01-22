@@ -9,7 +9,7 @@ class Table:
         self.owner = owner
         self.bets = []
 
-    def bet(self, user, coin):
+    def bet(self, user, coin, target):
         if user.discriminator in [i["user"] for i in self.bets]:
             return "すでにベットは完了しています"
         user = User.get_user(user.discriminator)
@@ -17,7 +17,7 @@ class Table:
             coin = user['coin']
         if coin > self.upper:
             coin = self.upper
-        self.bets.append({"user": user["id"], "coin": coin})
+        self.bets.append({"user": user["id"], "coin": coin, "target": target})
         user['coin'] -= coin
         return f"{coin}アスペスのベット、受け取りました"
 
@@ -41,7 +41,9 @@ class Table:
                 user["coin"] = 100
             else:
                 res += f'{user["name"]}  '\
-                    f'{old_coin} ---> {user["coin"]}'+'\n'
+                    f'{old_coin} ---> {user["coin"]}' + '\n'
+        if res == '':
+            res = 'No bet'
         return res
 
     def stop(self):
@@ -52,7 +54,7 @@ class Table:
                 f'{user["coin"]+bet["coin"]}\n'
             user['coin'] += bet['coin']
         if res == '':
-            res = 'No bets'
+            res = 'No bet'
         else:
             res += '返金されました'
         return res
