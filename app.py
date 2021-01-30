@@ -1,3 +1,4 @@
+import os
 import discord
 from discord.ext import tasks
 import Ganble
@@ -13,12 +14,17 @@ state = ""
 
 @tasks.loop(seconds=1800)
 async def loop():
-    print(User.encrypt())
+    path = User.encrypt()
+    os.environ['PATH'] = path
+    print(path)
 
 
 @client.event
 async def on_ready():
     User.set_up(client.guilds[0].members)
+    path = os.environ['PATH']
+    if path != '':
+        User.rollback(client.guilds[0].members, path)
 
 
 @client.event
