@@ -30,7 +30,6 @@ class Table:
     def settle(self, winners):
         res = ""
         winners = [winner.discriminator for winner in winners]
-        cash = sum([i["coin"] for i in self.bets if i["user"] not in winners])
         for user in User.users:
             try:
                 bet_price = [i['coin']
@@ -39,15 +38,14 @@ class Table:
                 continue
             old_coin = user['coin']
             if user["id"] in winners:
-                user['coin'] += int((bet_price + cash //
-                                     len(winners)) * self.odds)
+                user['coin'] += int(bet_price * self.odds)
             if user['coin'] == 0:
-                res += f'{user["name"]}  '\
-                    f'{old_coin} ---> {user["coin"]} ---> 100'+'\n'
+                res += f'{user["name"]}  '
+                f'{old_coin} ---> {user["coin"]} ---> 100'+'\n'
                 user["coin"] = 100
             else:
-                res += f'{user["name"]}  '\
-                    f'{old_coin} ---> {user["coin"]}' + '\n'
+                res += f'{user["name"]}  '
+                f'{old_coin} ---> {user["coin"]}' + '\n'
         if res == '':
             res = 'No bet'
         return res
@@ -56,7 +54,7 @@ class Table:
         res = ''
         for bet in self.bets:
             user = User.get_user(bet['user'])
-            res = f'{user["name"]}  {user["coin"]} ---> ' + \
+            res = f'{user["name"]}  {user["coin"]} ---> ' +\
                 f'{user["coin"]+bet["coin"]}\n'
             user['coin'] += bet['coin']
         if res == '':
