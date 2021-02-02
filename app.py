@@ -1,8 +1,8 @@
+import os
 import discord
 from discord.ext import tasks
 import Ganble
 import User
-from Setting import token
 intents = discord.Intents.default()
 intents.members = True
 client = discord.Client(intents=intents)
@@ -220,4 +220,5 @@ async def on_message(message):
 
 if __name__ == "__main__":
     loop.start()
+    token = os.environ["token"]
     client.run(token)
